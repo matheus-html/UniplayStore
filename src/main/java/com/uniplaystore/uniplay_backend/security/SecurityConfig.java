@@ -16,6 +16,10 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration; // Importe
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource; // Importe
+import org.springframework.web.filter.CorsFilter; // Importe
+
 
 @Configuration
 @EnableWebSecurity
@@ -35,14 +39,14 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
                         .requestMatchers("/error").permitAll()
-                        .requestMatchers("/h2-console/**").permitAll() // Manter para H2, se estiver usando
-                        .requestMatchers(HttpMethod.POST, "/game/register").hasRole("ADMIN") // Exemplo: apenas ADMIN pode registrar jogos
+                        .requestMatchers("/h2-console/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/game/register").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/game/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/game/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/game/**").permitAll() // Leitura de jogos para todos
-                        .requestMatchers(HttpMethod.POST, "/order/**").hasAnyRole("ADMIN", "USER") // Criação de pedidos para USER e ADMIN
+                        .requestMatchers(HttpMethod.GET, "/game/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/order/**").hasAnyRole("ADMIN", "USER")
                         .requestMatchers(HttpMethod.GET, "/order/**").hasAnyRole("ADMIN", "USER")
-                        .anyRequest().authenticated() // Qualquer outra requisição precisa de autenticação
+                        .anyRequest().authenticated()
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
@@ -60,5 +64,18 @@ public class SecurityConfig {
     @Bean
     public AuthenticationEntryPoint authenticationEntryPoint() {
         return new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED);
+    }
+
+    @Bean
+    public CorsFilter corsFilter() {
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(true);
+        config.addAllowedOrigin("http://localhost:3000");
+        config.addAllowedOrigin("https://https://uniplay-store.vercel.app");
+        config.addAllowedHeader("*");
+        config.addAllowedMethod("*");
+        source.registerCorsConfiguration("/**", config);
+        return new CorsFilter(source);
     }
 }

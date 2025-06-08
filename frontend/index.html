@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uniplay Frontend</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: auto; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
+        div { margin-bottom: 10px; }
+        input[type="text"], input[type="password"], input[type="number"] { width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px; }
+        button { padding: 10px 15px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        pre { background-color: #f4f4f4; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        h2 { border-bottom: 1px solid #eee; padding-bottom: 10px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Uniplay Frontend</h1>
+
+    <h2>1. Login</h2>
+    <div>
+        <label for="loginUsername">Login:</label>
+        <input type="text" id="loginUsername" value="adminuser">
+    </div>
+    <div>
+        <label for="loginPassword">Senha:</label>
+        <input type="password" id="loginPassword" value="adminpassword123">
+    </div>
+    <button onclick="login()">Login</button>
+    <div id="loginStatus"></div>
+    <div id="jwtToken"></div>
+
+    <h2>2. Registrar Jogo (Requer Admin Token)</h2>
+    <div>
+        <label for="gameTitle">Título:</label>
+        <input type="text" id="gameTitle" value="Novo Jogo Exemplo">
+    </div>
+    <div>
+        <label for="gameGenre">Gênero:</label>
+        <input type="text" id="gameGenre" value="Acao">
+    </div>
+    <div>
+        <label for="gamePrice">Preço:</label>
+        <input type="number" step="0.01" id="gamePrice" value="59.99">
+    </div>
+    <div>
+        <label for="gameStock">Estoque:</label>
+        <input type="number" id="gameStock" value="100">
+    </div>
+    <div>
+        <label for="gameDescription">Descrição:</label>
+        <input type="text" id="gameDescription" value="Uma aventura emocionante.">
+    </div>
+    <button onclick="registerGame()">Registrar Jogo</button>
+    <div id="registerGameStatus"></div>
+
+    <h2>3. Listar Todos os Jogos</h2>
+    <button onclick="listGames()">Listar Jogos</button>
+    <pre id="gamesList"></pre>
+</div>
+
+<script>
+    // Substitua pela URL REAL do seu backend no Railway
+    const BACKEND_URL = "https://uniplaystore-production.up.railway.app";
+    let currentJwtToken = ''; // Armazena o token JWT após o login
+
+    async function login() {
+        const username = document.getElementById('loginUsername').value;
+        const password = document.getElementById('loginPassword').value;
+        const loginStatusDiv = document.getElementById('loginStatus');
+        const jwtTokenDiv = document.getElementById('jwtToken');
+
+        try {
+            const response = await fetch(`${BACKEND_URL}/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ login: username, password: password })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                currentJwtToken = data.token;
+                loginStatusDiv.textContent = 'Login bem-sucedido!';
+                jwtTokenDiv.textContent = `Token JWT: ${currentJwtToken.substring(0, 30)}...`; // Mostra só um pedaço
+                loginStatusDiv.style.color = 'green';
+            } else {
+                const errorText = await response.text();
+                loginStatusDiv.textContent = `Erro no login: ${errorText || response.statusText}`;
+                loginStatusDiv.style.color = 'red';
+                currentJwtToken = '';
+            }
+        } catch (error) {
+            loginStatusDiv.textContent = `Erro de rede: ${error.message}`;
+            loginStatusDiv.style.color = 'red';
+            currentJwtToken = '';
+        }
+    }
+
+    async function registerGame() {
+        if (!currentJwtToken) {
+            alert('Faça login como ADMIN primeiro para registrar um jogo.');
+            return;
+        }
+
+        const gameData = {
+            title: document.getElementById('gameTitle').value,
+            genre: document.getElementById('gameGenre').value,
+            price: parseFloat(document.getElementById('gamePrice').value),
+            stock: parseInt(document.getElementById('gameStock').value),
+            description: document.getElementById('gameDescription').value
+        };
+        const registerGameStatusDiv = document.getElementById('registerGameStatus');
+
+        try {
+            const response = await fetch(`${BACKEND_URL}/game/register`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${currentJwtToken}`
+                },
+                body: JSON.stringify(gameData)
+            });
+
+            if (response.ok) {
+                registerGameStatusDiv.textContent = 'Jogo registrado com sucesso!';
+                registerGameStatusDiv.style.color = 'green';
+            } else {
+                const errorText = await response.text();
+                registerGameStatusDiv.textContent = `Erro ao registrar jogo: ${errorText || response.statusText}`;
+                registerGameStatusDiv.style.color = 'red';
+            }
+        } catch (error) {
+            registerGameStatusDiv.textContent = `Erro de rede: ${error.message}`;
+            registerGameStatusDiv.style.color = 'red';
+        }
+    }
+
+    async function listGames() {
+        const gamesListPre = document.getElementById('gamesList');
+        gamesListPre.textContent = 'Carregando jogos...';
+
+        try {
+            const response = await fetch(`${BACKEND_URL}/game/list`, {
+                method: 'GET'
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                gamesListPre.textContent = JSON.stringify(data, null, 2);
+            } else {
+                const errorText = await response.text();
+                gamesListPre.textContent = `Erro ao listar jogos: ${errorText || response.statusText}`;
+            }
+        } catch (error) {
+            gamesListPre.textContent = `Erro de rede: ${error.message}`;
+        }
+    }
+</script>
+</body>
+</html>
