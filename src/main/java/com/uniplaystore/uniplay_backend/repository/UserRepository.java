@@ -1,12 +1,10 @@
 package com.uniplaystore.uniplay_backend.repository;
 
 import com.uniplaystore.uniplay_backend.user.User;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.UUID;
-
-public interface UserRepository extends JpaRepository<User, UUID> {
+public interface UserRepository extends MongoRepository<User, String> {
     UserDetails findByLogin(String login);
     UserDetails findByEmail(String email);
 }

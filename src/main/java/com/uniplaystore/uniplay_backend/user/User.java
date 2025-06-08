@@ -1,35 +1,33 @@
 package com.uniplaystore.uniplay_backend.user;
 
 import lombok.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.index.Indexed;
 
-import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 
-@Entity(name = "users")
+@Document(collection = "users")
 @Getter
 @Setter
-@Table(name = "users")
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(of = "id")
 public class User implements UserDetails {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    private String id;
 
     private String login;
 
-    @Column(nullable = false, unique = true)
+    @Indexed(unique = true) 
     private String email;
 
-    @Column(nullable = false)
     private String password;
 
     private UserRole role;
@@ -58,7 +56,6 @@ public class User implements UserDetails {
                 new SimpleGrantedAuthority(UserRole.ROLE_USER.name()));
         else return List.of(new SimpleGrantedAuthority(UserRole.ROLE_USER.name()));
     }
-
 
     @Override
     public String getUsername() {
