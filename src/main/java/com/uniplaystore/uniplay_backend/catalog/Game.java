@@ -1,29 +1,23 @@
 package com.uniplaystore.uniplay_backend.catalog;
 
-import jakarta.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Table(name = "games")
-@Entity(name = "games")
+@Document(collection = "games")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 
 public class Game {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    @Column(unique = true)
+    private String id;
     private String title;
-    @Column
     private String genre;
-    @Column
     private double price;
-    @Column
     private int stock;
-    @Column
     private String description;
 
     public Game(GameRequestDTO data) {

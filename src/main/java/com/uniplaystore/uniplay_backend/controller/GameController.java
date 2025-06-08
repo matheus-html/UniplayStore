@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/game")
@@ -19,8 +20,8 @@ public class GameController {
 
     @PostMapping("/register")
     public ResponseEntity<String> postGame(@RequestBody @Valid GameRequestDTO body){
-        boolean exists = gameRepository.findByTitleContainingIgnoreCase(body.title()).stream().findFirst().isPresent();
-        if(exists){
+        Optional<Game> existingGame = gameRepository.findByTitleIgnoreCase(body.title());
+        if(existingGame.isPresent()){
             return ResponseEntity
                     .status(HttpStatus.CONFLICT)
                     .body("TÍTULO DO JOGO JÁ EXISTENTE.");
@@ -28,7 +29,7 @@ public class GameController {
 
         Game game = new Game(body);
         this.gameRepository.save(game);
-        return ResponseEntity.ok("Jogo cadastrado com sucesso.");
+        return ResponseEntity.status(HttpStatus.CREATED).body("Jogo cadastrado com sucesso.");
     }
 
     @GetMapping("/genre/{genre}")
@@ -50,5 +51,40 @@ public class GameController {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.ok(gameResponseDTOList);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<GameResponseDTO> updateGame(@PathVariable String id, @RequestBody @Valid GameRequestDTO body){
+        Optional<Game> optionalGame = gameRepository.findById(id);
+        if (optionalGame.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Game existingGame = optionalGame.get();
+
+        if (!existingGame.getTitle().equalsIgnoreCase(body.title())) {
+            Optional<Game> gameWithNewTitle = gameRepository.findByTitleIgnoreCase(body.title());
+            if (gameWithNewTitle.isPresent()) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).build();
+            }
+        }
+
+        existingGame.setTitle(body.title());
+        existingGame.setGenre(body.genre());
+        existingGame.setPrice(body.price());
+        existingGame.setStock(body.stock());
+        existingGame.setDescription(body.description());
+
+        Game updatedGame = gameRepository.save(existingGame);
+        return ResponseEntity.ok(new GameResponseDTO(updatedGame));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteGame(@PathVariable String id){
+        if (!gameRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
+        gameRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 }

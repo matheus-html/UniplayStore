@@ -1,11 +1,14 @@
 package com.uniplaystore.uniplay_backend.repository;
 
-import org.springframework.data.jpa.repository.JpaRepository;
 import com.uniplaystore.uniplay_backend.catalog.Game;
-import java.util.List;
+import org.springframework.data.mongodb.repository.MongoRepository;
 
-public interface GameRepository extends JpaRepository<Game, Long> {
+import java.util.List;
+import java.util.Optional;
+
+public interface GameRepository extends MongoRepository<Game, String> {
 
     List<Game> findByGenre(String genre);
+    Optional<Game> findByTitleIgnoreCase(String title);
     List<Game> findByTitleContainingIgnoreCase(String title);
 }
