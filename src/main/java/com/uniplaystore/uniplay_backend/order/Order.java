@@ -1,9 +1,7 @@
 package com.uniplaystore.uniplay_backend.order;
 
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -28,7 +26,7 @@ public class Order {
 
     public Order(OrderRequestDTO data) {
         this.userId = data.userId();
-        this.orderDate = LocalDateTime.now(); // Data do pedido é definida na criação
+        this.orderDate = LocalDateTime.now();
         this.totalAmount = data.totalAmount();
         this.status = data.status();
     }
