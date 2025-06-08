@@ -72,7 +72,7 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
 
-        config.addAllowedOrigin("https://uniplay-store.vercel.app");
+        config.addAllowedOrigin("uniplay-store-2cf7ku3mj-matheus-projects-5617f3c4.vercel.app");
         config.addAllowedOrigin("http://localhost:3000");
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
