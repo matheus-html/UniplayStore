@@ -1,0 +1,28 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+title Diagrama de Contêineres - Sistema Uniplay (Monólito Modular)
+
+Person(customer, "Cliente/Administrador", "Interage com a aplicação Uniplay para gerenciar o catálogo de jogos.")
+
+System_Boundary(uniplay_system, "Sistema Uniplay") {
+
+    Container(frontend_app, "Aplicação Web Frontend", "HTML, CSS, JavaScript", "Interface de usuário para visualização e gerenciamento de jogos e autenticação.", "Vercel")
+
+    Container(backend_api, "API Backend (Monólito Modular)", "Spring Boot (Java 17), Spring Modulith", "Fornece APIs para: Gerenciamento de Jogos (CRUD), Autenticação (JWT).", "Railway")
+
+}
+
+System_Ext(mongodb_atlas, "MongoDB Atlas", "Serviço de Banco de Dados NoSQL", "Armazena dados de jogos e usuários.")
+
+Rel(customer, frontend_app, "Acessa", "https://uniplay-store.vercel.app")
+Rel(frontend_app, backend_api, "Consome APIs", "https://uniplaystore-production.up.railway.app")
+Rel_D(backend_api, mongodb_atlas, "Lê e Escreve dados", "Driver MongoDB / TLS")
+
+Boundary(internet, "Internet") {
+    Rel_Up(customer, frontend_app, "Acessa via Internet")
+    Rel_Up(frontend_app, backend_api, "Requisições API via Internet")
+}
+
+Rel_Neighbor(frontend_app, backend_api, "Comunicação Cross-Origin", "CORS configurado")
+@enduml
